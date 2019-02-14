@@ -64,7 +64,8 @@ class ClassificatorTFRecordHandler():
         print('TF Records will be created under ' + self.destination)
 
         shape = None
-        for _, row in examples.iterrows():
+        for idx, row in examples.iterrows():
+            print(str(idx),'/' , str(len(examples)))
             destination = os.path.join(self.destination, row['id'] + '.tfrecords')
             # We can create a compressed writer with TFRecordCompressionType
             with tf.io.TFRecordWriter(destination, tf.io.TFRecordCompressionType.GZIP) as writer:
@@ -84,15 +85,16 @@ class ClassificatorTFRecordHandler():
 
     @staticmethod
     def parse_tf_record(tf_record):
-        keys_to_features = {'height': tf.VarLenFeature(tf.int64),
-                            'width': tf.VarLenFeature(tf.int64),
-                            'image_raw': tf.VarLenFeature(tf.int64),
-                            'mask_raw': tf.VarLenFeature(tf.int64)}
+        keys_to_features = {'height': tf.io.VarLenFeature(tf.int64),
+                            'width': tf.io.VarLenFeature(tf.int64),
+                            'image_raw': tf.io.VarLenFeature(tf.int64),
+                            'mask_raw': tf.io.VarLenFeature(tf.int64)}
+        print(tf_record)
 
-        parsed_features = tf.parse_single_example(tf_record, keys_to_features)
+        parsed_features = tf.io.parse_single_example(tf_record, keys_to_features)
 
-        parsed_features['image_raw'] = tf.sparse.reshape(parsed_features['image_raw'],
+        reshaped = tf.sparse.reshape(parsed_features['image_raw'],
                                                          (parsed_features['height'].values[0], parsed_features['width']
                                                           .values[0]))
-
-        return parsed_features['image_raw'], parsed_features['mask_raw']
+        reshaped = tf.reshape(parsed_features['image_raw'].values,(1024,1024))
+        return reshaped, parsed_features['mask_raw'].values[0]
