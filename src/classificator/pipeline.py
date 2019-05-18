@@ -5,7 +5,7 @@ import tensorflow as tf
 import os
 
 
-def classificator_pipeline(tf_records_path, batch_size=1, io_parallel_calls=1, file_parsing_parallelism=1,
+def classificator_pipeline(tf_records_path, reshape_size=(128, 128), batch_size=1, io_parallel_calls=1, file_parsing_parallelism=1,
                            augmentation_parallelism=1):
     print("Reading from " + tf_records_path)
 
@@ -36,7 +36,7 @@ def classificator_pipeline(tf_records_path, batch_size=1, io_parallel_calls=1, f
     dataset = dataset.batch(batch_size)
 
     # Reshape
-    resize = lambda x, y: (tf.image.resize(x, (32,32)), y)
+    resize = lambda x, y: (tf.image.resize(x, reshape_size), y)
     dataset = dataset.map(resize, num_parallel_calls=augmentation_parallelism)
 
     return dataset
