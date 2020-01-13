@@ -15,7 +15,7 @@ def classificator_pipeline(tf_records_path, reshape_size=(128, 128), batch_size=
                          num_parallel_calls=file_parsing_parallelism)
 
     # Cast to float
-    cast = lambda x, y: (tf.cast(x, tf.dtypes.float32), tf.cast(y, tf.dtypes.float32))
+    cast = lambda x, y: (tf.cast(x, tf.dtypes.float32), tf.one_hot(y, 2))
     dataset = dataset.map(cast, num_parallel_calls=augmentation_parallelism)
 
     reshape = lambda x, y: (tf.reshape(x, (1024, 1024, 1)), y)
@@ -52,8 +52,8 @@ if __name__ == '__main__':
     img = next(img)
 
     for data in iter(dataset):
-        print(img[0].shape, img[1])
-        print(data[1], data[0].shape)
+        #print(img[0].shape, img[1])
+        print(data[1])#, data[0].shape)
 
     import matplotlib.pyplot as plt
 

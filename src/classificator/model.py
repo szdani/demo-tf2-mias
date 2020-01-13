@@ -2,22 +2,22 @@ from .pipeline import classificator_pipeline
 
 import os
 import tensorflow as tf
+import tensorflow_probability as tfp
 
+import datetime
 
-model = tf.keras.Sequential()
-model.add(tf.keras.layers.Conv2D(filters=3, kernel_size=3))
-model.add(tf.keras.layers.Conv2D(filters=16, kernel_size=3))
-model.add(tf.keras.layers.Conv2D(filters=32, kernel_size=3))
-model.add(tf.keras.layers.Conv2D(filters=32, kernel_size=3))
-model.add(tf.keras.layers.Conv2D(filters=16, kernel_size=3))
-model.add(tf.keras.layers.Flatten())
-model.add(tf.keras.layers.Dense(32, activation='relu'))
-model.add(tf.keras.layers.Dense(1, activation='softmax'))
+LOG_DIR = '../../logs/classif/{}'.format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
-model.compile(optimizer=tf.keras.optimizers.Adam(0.001), loss='binary_crossentropy', metrics=['accuracy'])
+model = tf.keras.applications.inception_v3.InceptionV3(include_top=True, weights=None,
+                                                       input_shape=(512,512,1), classes=2)
 
+model.compile(optimizer=tf.keras.optimizers.Adam(0.01), loss='binary_crossentropy',
+              metrics=['accuracy', 'binary_crossentropy'])
 
-tf_records_path = os.path.join('data/tf_records/', 'classificator_0/*.tfrecords')
+reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.5, patience=10, min_lr=0.00001, verbose=1)
+tfboard = tf.keras.callbacks.TensorBoard(log_dir=LOG_DIR, histogram_freq=0, write_graph=True, write_images=True)
+
+tf_records_path = os.path.join('../../data/tf_records/', 'classificator_0/*.tfrecords')
 dataset = classificator_pipeline(tf_records_path,
                                  reshape_size=(512,512),
                                  batch_size=5,
@@ -26,4 +26,4 @@ dataset = classificator_pipeline(tf_records_path,
                                  augmentation_parallelism=2)
 
 
-model.fit(dataset, epochs=30, steps_per_epoch=64)
+model.fit(dataset, epochs=300, steps_per_epoch=200, verbose=2, callbacks=[reduce_lr, tfboard])
