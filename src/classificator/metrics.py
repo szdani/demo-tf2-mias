@@ -7,7 +7,8 @@ def kl_and_binary_crossentropy(kl, beta=1.0):
         return result
     return loss
 
-def simple_tensor_wrapper(tensor):
+
+def simple_tensor_wrapper(tensor, beta=1.0):
     def loss(_, __):
-        return tensor
+        return beta * tensor
     return loss

@@ -5,7 +5,7 @@ import tensorflow as tf
 import os
 
 
-def classificator_pipeline(tf_records_path, reshape_size=(128, 128), batch_size=1, io_parallel_calls=1, file_parsing_parallelism=1,
+def classificator_pipeline(tf_records_path, target_size=(128, 128), batch_size=1, io_parallel_calls=1, file_parsing_parallelism=1,
                            augmentation_parallelism=1):
     print("Reading from " + tf_records_path)
 
@@ -17,9 +17,9 @@ def classificator_pipeline(tf_records_path, reshape_size=(128, 128), batch_size=
     def f(x, y):
         x = tf.cast(x, tf.dtypes.float32)
         x = tf.reshape(x, (1024, 1024, 1))
-        x = tf.clip_by_value(x, 0.0, 300.0)
-        x = tf.image.random_brightness(x, 1.)
-        x = tf.image.adjust_gamma(x, 1, 1)
+        x = tf.clip_by_value(x, 0.0, 500.0)
+        #x = tf.image.random_brightness(x, 1.)
+        #x = tf.image.adjust_gamma(x, 1, 1)
 
         y = tf.one_hot(y, 2)
         return x, y
@@ -31,7 +31,7 @@ def classificator_pipeline(tf_records_path, reshape_size=(128, 128), batch_size=
     dataset = dataset.batch(batch_size)
 
     # Reshape
-    resize = lambda x, y: (tf.image.resize(x, reshape_size), y)
+    resize = lambda x, y: (tf.image.resize(x, target_size), y)
     dataset = dataset.map(resize, num_parallel_calls=augmentation_parallelism).prefetch(1)
 
     return dataset

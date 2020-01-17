@@ -19,7 +19,7 @@ tfboard = tf.keras.callbacks.TensorBoard(log_dir=LOG_DIR, histogram_freq=0, writ
 
 tf_records_path = os.path.join('../../data/tf_records/', 'classificator_0/*.tfrecords')
 dataset = classificator_pipeline(tf_records_path,
-                                 reshape_size=(512,512),
+                                 target_size=(512,512),
                                  batch_size=5,
                                  io_parallel_calls=2,
                                  file_parsing_parallelism=1,
